@@ -2,21 +2,21 @@ import { useMutation, gql } from "@apollo/client"
 import { useRouter } from "next/router";
 import { useState } from "react";
 
-const CREATE_PRODUCT = gql`
-  mutation createProduct($seller: String, $createProductInput: CreateProductInput!){
-    createProduct(seller: $seller, createProductInput: $createProductInput) {
+const UPDATE_PRODUCT = gql`
+  mutation updateProduct($productId: ID, $updateProductInput: UpdateProductInput!){
+    updateProduct(productId: $productId, updateProductInput: $updateProductInput) {
       _id
       message
     }
   }
 `
 
-export default function ProductCreatePage() {
+export default function ProductUpdatePage() {
   const router = useRouter();
   console.log(router.query.productId);
-  
-  const [createProduct] = useMutation(CREATE_PRODUCT);
-  const [seller, setSeller] = useState("");
+
+  const [updateProduct] = useMutation(UPDATE_PRODUCT);
+  // const [seller, setSeller] = useState("");
   const [inputs, setInputs] = useState({});
 
   const onChangeSeller = (e) => {
@@ -29,20 +29,20 @@ export default function ProductCreatePage() {
     setInputs({...inputs, [id]: value})
   }
 
-  const onCreateProduct = async () => {
+  const onUpdateProduct = async () => {
     try {
-      const result = await createProduct({
+      const result = await updateProduct({
         variables: {
-          seller,
-          createProductInput: {
+          productId: router.query.productId,
+          updateProductInput: {
             name: inputs.name,
             detail: inputs.detail,
             price: Number(inputs.price)
           }
         }
       });
-      console.log(result.data?.createProduct._id);
-      void router.push(`/08-product/${result.data?.createProduct._id}`)
+      console.log(result.data?.updateProduct._id);
+      void router.push(`/08-product/${result.data?.updateProduct._id}`)
 
     } catch(error) {
       if(error instanceof Error) {
@@ -53,12 +53,11 @@ export default function ProductCreatePage() {
 
   return (
     <>
-      <h1>상품 등록</h1>
-      판매자 : <input id="seller" type="text" onChange={onChangeSeller}/>
+      <h1>상품 수정</h1>
       상품명 : <input id="name" type="text" onChange={onChangeInput}/>
       상품설명 : <input id="detail" type="text" onChange={onChangeInput}/>
       가격 : <input id="price" type="text" onChange={onChangeInput}/>
-      <button onClick={onCreateProduct}>등록하기</button>
+      <button onClick={onUpdateProduct}>수정하기</button>
     </>
   )
 }
